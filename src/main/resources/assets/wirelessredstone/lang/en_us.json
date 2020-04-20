@@ -1,16 +1,8 @@
 {
-  "item.wirelessredstone.example_item":"Example Item!",
-  "item.wirelessredstone.example_sword":"Example Sword",
-  "item.wirelessredstone.example_pickaxe":"Example Pickaxe",
-  "item.wirelessredstone.example_shovel":"Example Shovel",
-  "item.wirelessredstone.example_hoe":"Example Hoe",
-  "item.wirelessredstone.example_axe":"Example Axe",
-
   "item.wirelessredstone.linker":"Wireless Linker",
 
   "itemGroup.wirelessredstone":"Wireless Redstone",
-  "block.wirelessredstone.redstone_transmitter":"Redstone Transmitter",
-  "block.wirelessredstone.redstone_receiver":"Redstone Receiver",
 
-  "block.wirelessredstone.example_block":"Example Block!"
+  "block.wirelessredstone.redstone_transmitter":"Redstone Transmitter",
+  "block.wirelessredstone.redstone_receiver":"Redstone Receiver"
 }

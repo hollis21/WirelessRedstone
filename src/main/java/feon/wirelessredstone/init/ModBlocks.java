@@ -9,7 +9,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraftforge.common.ToolType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -20,21 +19,12 @@ import net.minecraftforge.registries.ObjectHolder;
 @ObjectHolder(Main.MODID)
 public class ModBlocks extends EventBusSubscriberBase {
 
-  public static final Block example_block = null;
   public static final RedstoneReceiver redstone_receiver = null;
   public static final RedstoneTransmitter redstone_transmitter = null;
 
   @SubscribeEvent()
   public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
     event.getRegistry().registerAll(
-      setup(new Block(
-        Block.Properties
-          .create(Material.ROCK)
-          .hardnessAndResistance(3.0f, 7.0f)
-          .harvestTool(ToolType.PICKAXE)
-          .harvestLevel(2)
-          .sound(SoundType.STONE)
-      ), "example_block"),
       setup(new RedstoneTransmitter(
         Block.Properties
           .create(Material.IRON, MaterialColor.TNT)
@@ -53,10 +43,6 @@ public class ModBlocks extends EventBusSubscriberBase {
   @SubscribeEvent()
   public static void onRegisterBlockItem(final RegistryEvent.Register<Item> event) {
     event.getRegistry().registerAll(
-      setup(new BlockItem(example_block, 
-        new Item.Properties()
-          .group(ModItemGroups.MOD_ITEM_GROUP)
-      ), "example_block"),
       setup(new BlockItem(redstone_transmitter, 
         new Item.Properties()
           .group(ModItemGroups.MOD_ITEM_GROUP)

@@ -26,16 +26,10 @@ public class ModBlocks extends EventBusSubscriberBase {
   public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
     event.getRegistry().registerAll(
       setup(new RedstoneTransmitter(
-        Block.Properties
-          .create(Material.IRON, MaterialColor.TNT)
-          .hardnessAndResistance(5.0F, 6.0F)
-          .sound(SoundType.METAL)
+        Block.Properties.create(Material.MISCELLANEOUS).hardnessAndResistance(0.0F).sound(SoundType.WOOD)
       ), "redstone_transmitter"),
       setup(new RedstoneReceiver(
-        Block.Properties
-          .create(Material.IRON, MaterialColor.TNT)
-          .hardnessAndResistance(5.0F, 6.0F)
-          .sound(SoundType.METAL)
+        Block.Properties.create(Material.MISCELLANEOUS).hardnessAndResistance(0.0F).sound(SoundType.WOOD)
       ), "redstone_receiver")
     );
   }

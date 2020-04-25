@@ -2,7 +2,7 @@ package feon.wirelessredstone.events;
 
 import feon.wirelessredstone.Main;
 import feon.wirelessredstone.objects.items.LinkerItem;
-import feon.wirelessredstone.objects.items.capabilities.TargetBlockCapability;
+import feon.wirelessredstone.objects.items.capabilities.targetblock.TargetBlockCapability;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.AttachCapabilitiesEvent;

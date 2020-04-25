@@ -1,4 +1,4 @@
-package feon.wirelessredstone.objects.items.capabilities;
+package feon.wirelessredstone.objects.items.capabilities.targetblock;
 
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;

@@ -1,4 +1,4 @@
-package feon.wirelessredstone.objects.items.capabilities;
+package feon.wirelessredstone.objects.items.capabilities.targetblock;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;

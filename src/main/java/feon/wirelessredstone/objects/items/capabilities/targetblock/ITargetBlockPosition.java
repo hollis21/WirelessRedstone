@@ -1,7 +1,5 @@
-package feon.wirelessredstone.objects.items.capabilities;
+package feon.wirelessredstone.objects.items.capabilities.targetblock;
 
-import net.minecraft.nbt.IntArrayNBT;
-import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.math.BlockPos;
 
 public interface ITargetBlockPosition {

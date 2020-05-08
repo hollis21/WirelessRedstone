@@ -55,6 +55,7 @@ public class RedstoneReceiver extends HorizontalBlock {
     return ActionResultType.SUCCESS;
   }
 
+  // When the blockstate is replaced notify the neighbors so their redstone power gets updated
   @Override
   public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState, final boolean isMoving) {
     if (!isMoving && state.getBlock() != newState.getBlock()) {
@@ -86,6 +87,7 @@ public class RedstoneReceiver extends HorizontalBlock {
     worldIn.notifyNeighborsOfStateChange(pos, this);
   }
 
+  // For breaking the block if the block's position becomes invalid
   @Override
   public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn,
       BlockPos currentPos, BlockPos facingPos) {

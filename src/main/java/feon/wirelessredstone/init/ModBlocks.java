@@ -10,40 +10,15 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
-@Mod.EventBusSubscriber(modid = Main.MODID, bus = Bus.MOD)
-@ObjectHolder(Main.MODID)
-public class ModBlocks extends EventBusSubscriberBase {
-
-  public static final RedstoneReceiver redstone_receiver = null;
-  public static final RedstoneTransmitter redstone_transmitter = null;
-
-  @SubscribeEvent()
-  public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
-    event.getRegistry().registerAll(
-      setup(new RedstoneTransmitter(
-        Block.Properties.create(Material.MISCELLANEOUS).hardnessAndResistance(0.0F).sound(SoundType.WOOD)
-      ), "redstone_transmitter"),
-      setup(new RedstoneReceiver(
-        Block.Properties.create(Material.MISCELLANEOUS).hardnessAndResistance(0.0F).sound(SoundType.WOOD)
-      ), "redstone_receiver")
-    );
-  }
-
-  @SubscribeEvent()
-  public static void onRegisterBlockItem(final RegistryEvent.Register<Item> event) {
-    event.getRegistry().registerAll(
-      setup(new BlockItem(redstone_transmitter, 
-        new Item.Properties()
-          .group(ModItemGroups.MOD_ITEM_GROUP)
-      ), "redstone_transmitter"),
-      setup(new BlockItem(redstone_receiver, 
-        new Item.Properties()
-          .group(ModItemGroups.MOD_ITEM_GROUP)
-      ), "redstone_receiver")
-    );
-  }
+public class ModBlocks {
+  public static final DeferredRegister<Block> BLOCKS = new DeferredRegister<>(ForgeRegistries.BLOCKS, Main.MODID);
+  
+  public static final RegistryObject<Block> REDSTONE_TRANSMITTER = BLOCKS.register("redstone_transmitter", () -> new RedstoneTransmitter(Block.Properties.create(Material.MISCELLANEOUS).hardnessAndResistance(0.0F).sound(SoundType.WOOD)));
+  public static final RegistryObject<Block> REDSTONE_RECEIVER = BLOCKS.register("redstone_receiver", () -> new RedstoneReceiver(Block.Properties.create(Material.MISCELLANEOUS).hardnessAndResistance(0.0F).sound(SoundType.WOOD)));
 }

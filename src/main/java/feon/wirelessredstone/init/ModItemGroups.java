@@ -10,7 +10,7 @@ public class ModItemGroups {
   
   public static final ItemGroup MOD_ITEM_GROUP = new ModItemGroup(
     Main.MODID, 
-    () -> new ItemStack(ModItems.linker));
+    () -> new ItemStack(ModItems.LINKER.get()));
 
   public static class ModItemGroup extends ItemGroup {
 

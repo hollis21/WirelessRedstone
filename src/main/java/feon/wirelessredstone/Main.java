@@ -7,6 +7,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import feon.wirelessredstone.init.ModBlocks;
+import feon.wirelessredstone.init.ModItems;
 import feon.wirelessredstone.init.ModTileEntityTypes;
 
 @Mod(Main.MODID)
@@ -21,6 +23,8 @@ public class Main {
         final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         
         ModTileEntityTypes.TILE_ENTITY_TYPES.register(modEventBus);
+        ModItems.ITEMS.register(modEventBus);
+        ModBlocks.BLOCKS.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
     }

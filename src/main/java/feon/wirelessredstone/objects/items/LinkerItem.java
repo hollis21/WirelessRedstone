@@ -7,6 +7,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.text.ITextComponent;
@@ -21,44 +22,58 @@ public class LinkerItem extends Item {
 
   @Override
   public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+    Integer frequency = this.getFrequency(stack);
+    String message = frequency == null ? "No frequency set" : ("Frequency: " + frequency);
+    tooltip.add(new StringTextComponent(message));
+
     if (Screen.hasShiftDown()) {
-      tooltip.add(new StringTextComponent("Test Information"));
-      tooltip.add(new StringTextComponent("More Information"));
-    } else {
-      tooltip.add(new StringTextComponent("A little test Information"));
-    }
+      String shiftMessage = "Right click on a Redstone Reciever or Transmitter to set their frequency to " + frequency;
+      if (frequency == null) {
+        shiftMessage = "Right click on a Redstone Reciever or Transmitter to set the Linker's frequency.";
+      }
+      tooltip.add(new StringTextComponent(shiftMessage));
+    } 
     super.addInformation(stack, worldIn, tooltip, flagIn);
+  }
+  private static final String FREQUENCY_KEY = "Frequency";
+
+  public Integer getFrequency(ItemStack stack) {
+    CompoundNBT tag = stack.getTag();
+    if (tag == null || !tag.contains(FREQUENCY_KEY)) {
+      return null;
+    }
+    return tag.getInt(FREQUENCY_KEY);
+  }
+
+  public void setFrequency(ItemStack stack, int frequency) {
+    CompoundNBT tag = stack.getOrCreateTag();
+    tag.remove(FREQUENCY_KEY);
+    tag.putInt(FREQUENCY_KEY, frequency);
+  }
+
+  public void clearFrequency(ItemStack stack) {
+    CompoundNBT tag = stack.getTag();
+    if (tag == null || !tag.contains(FREQUENCY_KEY)) {
+      return;
+    }
+    tag.remove(FREQUENCY_KEY);
   }
 
   @Override
   public ActionResult<ItemStack> onItemRightClick(World worldIn, PlayerEntity playerIn, Hand handIn) {
-    // if (!worldIn.isRemote) {
-    //   Main.LOGGER.info("!worldIn.isRemote");
-    //   playerIn.getHeldItem(handIn)
-    //     .getStack()
-    //     .getCapability(TargetBlockCapability.TARGET_BLOCK_CAPABILITY)
-    //     .ifPresent(tbp -> {
-    //       if (Screen.hasShiftDown()) {
-    //         Main.LOGGER.info("!worldIn.isRemote - Screen.hasShiftDown()");
+    if (!worldIn.isRemote) {
+      ItemStack stack = playerIn.getHeldItem(handIn);
+      if (stack.getItem() instanceof LinkerItem) {
+        LinkerItem linker = (LinkerItem)stack.getItem();
+        
+        if (playerIn.isSneaking() && linker.getFrequency(stack) != null) {
+          linker.clearFrequency(stack);
+          playerIn.sendStatusMessage(new StringTextComponent("Linker frequency cleared!"), false);
+          return ActionResult.resultSuccess(stack);
+        }
+      }
+    }
 
-    //         BlockPos pos = playerIn.getPosition();
-    //         playerIn.sendStatusMessage(new StringTextComponent(
-    //             String.format("Setting Linker Position - x:%1$s y:%2$s z:%3$s", pos.getX(), pos.getY(), pos.getZ())), false);
-    //         tbp.setBlockPosition(new BlockPos(pos.getX(), pos.getY(), pos.getZ()));
-    //       } else {
-    //         Main.LOGGER.info("!worldIn.isRemote - !Screen.hasShiftDown()");
-    //         BlockPos pos = tbp.getBlockPosition();
-    //         String message = "Linker Position not set";
-    //         if (pos != null) {
-    //           message = String.format("Linker Position - x:%1$s y:%2$s z:%3$s", pos.getX(), pos.getY(), pos.getZ());
-    //         }
-            
-    //         playerIn.sendStatusMessage(new StringTextComponent(message), false);
-    //       }
-    //     });
-    // } else {
-    //   Main.LOGGER.info("worldIn.isRemote");
-    // }
     return super.onItemRightClick(worldIn, playerIn, handIn);
   }
 }

@@ -56,6 +56,7 @@ public class RedstoneTransmitter extends HorizontalBlock {
     return ActionResultType.SUCCESS;
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState, final boolean isMoving) {
     if (!isMoving && state.getBlock() != newState.getBlock()) {
@@ -89,6 +90,7 @@ public class RedstoneTransmitter extends HorizontalBlock {
     log("updateNeightbors", "Exit");
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn,
       BlockPos currentPos, BlockPos facingPos) {

@@ -1,13 +1,13 @@
 package feon.wirelessredstone;
 
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import feon.wirelessredstone.objects.items.capabilities.targetblock.TargetBlockCapability;
+import feon.wirelessredstone.init.ModTileEntityTypes;
 
 @Mod(Main.MODID)
 public class Main {
@@ -17,12 +17,12 @@ public class Main {
 
     public Main() {
         LOGGER.info(Main.MODID + " Main constructed");
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+
+        final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        
+        ModTileEntityTypes.TILE_ENTITY_TYPES.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    private void setup(final FMLCommonSetupEvent event) {
-        TargetBlockCapability.register();
-    }
 }

@@ -1,13 +1,17 @@
 package feon.wirelessredstone.objects.blocks;
 
+import feon.wirelessredstone.init.ModTileEntityTypes;
+import feon.wirelessredstone.objects.items.LinkerItem;
+import feon.wirelessredstone.tileentity.RedstoneReceiverTileEntity;
+import feon.wirelessredstone.world.RedstoneNetwork;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.BooleanProperty;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -15,6 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
@@ -24,11 +29,8 @@ public class RedstoneReceiver extends HorizontalBlock {
 
   public RedstoneReceiver(Properties properties) {
    super(properties);
-   this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(POWERED,
-       Boolean.valueOf(true)));
+   this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH));
   }
-
-  public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
   protected static final VoxelShape SHAPE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D);
 
@@ -48,28 +50,57 @@ public class RedstoneReceiver extends HorizontalBlock {
   public ActionResultType onBlockActivated(BlockState state, final World worldIn, final BlockPos pos, final PlayerEntity player,
       final Hand handIn, final BlockRayTraceResult hit) {
     if (!worldIn.isRemote) {
-      state = state.cycle(POWERED);
-      worldIn.setBlockState(pos, state, 3);
-      this.updateNeighbors(state, worldIn, pos);
-    }
-    return ActionResultType.SUCCESS;
-  }
+      ItemStack stack = player.getHeldItem(handIn);
+      // Is the user clicking on this with the linker?
+      if (stack.getItem() instanceof LinkerItem) {
+        LinkerItem linker = (LinkerItem)stack.getItem();
+        TileEntity entity = worldIn.getTileEntity(pos);
+        // Verify that the tile entity at this position is the receiver
+        if (entity instanceof RedstoneReceiverTileEntity) {
+          RedstoneReceiverTileEntity receiverTileEntity = (RedstoneReceiverTileEntity) entity;
+          // get the linker's frequency
+          Integer linkerFrequency = linker.getFrequency(stack);
+          Integer receiverFrequency = receiverTileEntity.getFrequency();
+          String message;
 
-  // When the blockstate is replaced notify the neighbors so their redstone power gets updated
-  @Override
-  public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState, final boolean isMoving) {
-    if (!isMoving && state.getBlock() != newState.getBlock()) {
-      if (state.get(POWERED)) {
-        this.updateNeighbors(state, worldIn, pos);
+          if (linkerFrequency == null) {
+            if (receiverFrequency == null) {
+              // If neither have a frequency set, get a new frequency and set them both to it
+              RedstoneNetwork network = RedstoneNetwork.getNetwork(worldIn);
+              int newFrequency = network.getNewFrequency();
+              network.save();
+              
+              linker.setFrequency(stack, newFrequency);
+              receiverTileEntity.setFrequency(newFrequency);
+              message = "Receiver and Linker set to frequency " + newFrequency + ".";
+            } else {
+              // If the linker doesn't have a frequency but the receiver does, set the linker to the value
+              linker.setFrequency(stack, receiverFrequency);
+              message = "Linker set to frequency " + receiverFrequency + ".";
+            }
+          } else {
+            // If the linker has a frequency, set the receiver to it no matter what
+            receiverTileEntity.setFrequency(linkerFrequency);
+            message = "Receiver set to frequency " + linkerFrequency + ".";
+          }
+          
+          player.sendStatusMessage(new StringTextComponent(message), false);
+          return ActionResultType.SUCCESS;
+        }
       }
-
-      super.onReplaced(state, worldIn, pos, newState, isMoving);
     }
+    return ActionResultType.PASS;
   }
 
+  // Grabs the power from the tile entity
   @Override
   public int getWeakPower(final BlockState blockState, final IBlockReader blockAccess, final BlockPos pos, final Direction side) {
-    return blockState.get(POWERED) ? 15 : 0;
+    TileEntity entity = blockAccess.getTileEntity(pos);
+    if (blockState.getBlock() instanceof RedstoneReceiver && entity instanceof RedstoneReceiverTileEntity) {
+      RedstoneReceiverTileEntity receiverTileEntity = (RedstoneReceiverTileEntity) entity;
+      return receiverTileEntity.getPowerLevel();
+    }
+    return 0;
   }
 
   @Override
@@ -83,11 +114,8 @@ public class RedstoneReceiver extends HorizontalBlock {
     return true;
   }
 
-  private void updateNeighbors(final BlockState blockState, final World worldIn, final BlockPos pos) {
-    worldIn.notifyNeighborsOfStateChange(pos, this);
-  }
-
   // For breaking the block if the block's position becomes invalid
+  @SuppressWarnings("deprecation")
   @Override
   public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn,
       BlockPos currentPos, BlockPos facingPos) {
@@ -96,7 +124,16 @@ public class RedstoneReceiver extends HorizontalBlock {
 
   @Override
   protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-     builder.add(HORIZONTAL_FACING, POWERED);
+     builder.add(HORIZONTAL_FACING);
   }
 
+  @Override
+  public boolean hasTileEntity(BlockState state) {
+    return true;
+  }
+
+  @Override
+  public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+    return ModTileEntityTypes.REDSTONE_RECEIVER.get().create();
+  }
 }

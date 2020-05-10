@@ -1,6 +1,5 @@
 package feon.wirelessredstone.objects.blocks;
 
-import feon.wirelessredstone.Main;
 import feon.wirelessredstone.init.ModTileEntityTypes;
 import feon.wirelessredstone.objects.items.LinkerItem;
 import feon.wirelessredstone.tileentity.RedstoneTransmitterTileEntity;

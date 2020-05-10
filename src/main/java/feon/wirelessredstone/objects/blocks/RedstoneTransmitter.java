@@ -1,14 +1,18 @@
 package feon.wirelessredstone.objects.blocks;
 
 import feon.wirelessredstone.Main;
+import feon.wirelessredstone.init.ModTileEntityTypes;
+import feon.wirelessredstone.objects.items.LinkerItem;
+import feon.wirelessredstone.tileentity.RedstoneTransmitterTileEntity;
+import feon.wirelessredstone.world.RedstoneNetwork;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.BooleanProperty;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -16,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
@@ -25,17 +30,15 @@ public class RedstoneTransmitter extends HorizontalBlock {
 
   public RedstoneTransmitter(final Properties properties) {
     super(properties);
-    this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(POWERED,
-        Boolean.valueOf(true)));
+    this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH));
   }
-
-  public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
   protected static final VoxelShape SHAPE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D);
 
   // This block is a 2 voxel tall slab-like shape.
   @Override
-  public VoxelShape getShape(final BlockState state, final IBlockReader worldIn, final BlockPos pos, final ISelectionContext context) {
+  public VoxelShape getShape(final BlockState state, final IBlockReader worldIn, final BlockPos pos,
+      final ISelectionContext context) {
     return SHAPE;
   }
 
@@ -46,36 +49,50 @@ public class RedstoneTransmitter extends HorizontalBlock {
   }
 
   @Override
-  public ActionResultType onBlockActivated(BlockState state, final World worldIn, final BlockPos pos, final PlayerEntity player,
-      final Hand handIn, final BlockRayTraceResult hit) {
+  public ActionResultType onBlockActivated(BlockState state, final World worldIn, final BlockPos pos,
+      final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
     if (!worldIn.isRemote) {
-      state = state.cycle(POWERED);
-      worldIn.setBlockState(pos, state, 3);
-      this.updateNeighbors(state, worldIn, pos);
-    }
-    return ActionResultType.SUCCESS;
-  }
+      ItemStack stack = player.getHeldItem(handIn);
+      // Is the user clicking on this with the linker?
+      if (stack.getItem() instanceof LinkerItem) {
+        LinkerItem linker = (LinkerItem) stack.getItem();
+        TileEntity entity = worldIn.getTileEntity(pos);
+        // Verify that the tile entity at this position is the transmitter
+        if (entity instanceof RedstoneTransmitterTileEntity) {
+          RedstoneTransmitterTileEntity transmitterTileEntity = (RedstoneTransmitterTileEntity) entity;
+          // get the linker's frequency
+          Integer linkerFrequency = linker.getFrequency(stack);
+          Integer transmitterFrequency = transmitterTileEntity.getFrequency();
+          String message;
 
-  @SuppressWarnings("deprecation")
-  @Override
-  public void onReplaced(final BlockState state, final World worldIn, final BlockPos pos, final BlockState newState, final boolean isMoving) {
-    if (!isMoving && state.getBlock() != newState.getBlock()) {
-      if (state.get(POWERED)) {
-        this.updateNeighbors(state, worldIn, pos);
+          if (linkerFrequency == null) {
+            if (transmitterFrequency == null) {
+              // If neither have a frequency set, get a new frequency and set them both to it
+              RedstoneNetwork network = RedstoneNetwork.getNetwork(worldIn);
+              int newFrequency = network.getNewFrequency();
+              network.save();
+
+              linker.setFrequency(stack, newFrequency);
+              transmitterTileEntity.setFrequency(newFrequency);
+              message = "Transmitter and Linker set to frequency " + newFrequency + ".";
+            } else {
+              // If the linker doesn't have a frequency but the transmitter does, set the
+              // linker to the value
+              linker.setFrequency(stack, transmitterFrequency);
+              message = "Linker set to frequency " + transmitterFrequency + ".";
+            }
+          } else {
+            // If the linker has a frequency, set the transmitter to it no matter what
+            transmitterTileEntity.setFrequency(linkerFrequency);
+            message = "Transmitter set to frequency " + linkerFrequency + ".";
+          }
+
+          player.sendStatusMessage(new StringTextComponent(message), false);
+          return ActionResultType.SUCCESS;
+        }
       }
-
-      super.onReplaced(state, worldIn, pos, newState, isMoving);
     }
-  }
-
-  @Override
-  public int getWeakPower(final BlockState blockState, final IBlockReader blockAccess, final BlockPos pos, final Direction side) {
-    return blockState.get(POWERED) ? 15 : 0;
-  }
-
-  @Override
-  public int getStrongPower(final BlockState blockState, final IBlockReader blockAccess, final BlockPos pos, final Direction side) {
-    return 0;
+    return ActionResultType.PASS;
   }
 
   // Allows redstone wire to connect to it
@@ -84,48 +101,54 @@ public class RedstoneTransmitter extends HorizontalBlock {
     return true;
   }
 
-  private void updateNeighbors(final BlockState blockState, final World worldIn, final BlockPos pos) {
-    log("updateNeightbors", "Entered");
-    worldIn.notifyNeighborsOfStateChange(pos, this);
-    log("updateNeightbors", "Exit");
-  }
-
   @SuppressWarnings("deprecation")
   @Override
   public BlockState updatePostPlacement(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn,
       BlockPos currentPos, BlockPos facingPos) {
-    return facing == Direction.DOWN && !stateIn.isValidPosition(worldIn, currentPos) ? Blocks.AIR.getDefaultState() : super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+    return facing == Direction.DOWN && !stateIn.isValidPosition(worldIn, currentPos) ? Blocks.AIR.getDefaultState()
+        : super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
   }
-
-  // private void doStuff(String prefix, BlockPos pos, PlayerEntity player, Hand
-  // handIn) {
-  // Main.LOGGER.info(prefix);
-  // if (player.getHeldItem(handIn).getItem() instanceof LinkerItem) {
-  // Main.LOGGER.info(prefix + " - Holding LinkerItem");
-  // player.getHeldItem(handIn).getCapability(TargetBlockCapability.TARGET_BLOCK_CAPABILITY).ifPresent(cap
-  // -> {
-  // Main.LOGGER.info(prefix + " - cap present");
-  // BlockPos currentPos = cap.getBlockPosition();
-  // String message = prefix + "Linker position not set";
-  // if (currentPos != null) {
-  // message = String.format("Old Linker Position - x:%1$s y:%2$s z:%3$s",
-  // pos.getX(), pos.getY(), pos.getZ());
-  // }
-  // Main.LOGGER.info(message);
-  // });
-  // } else {
-  // Main.LOGGER.info(prefix + " - Not holding LinkerItem");
-  // }
-  // }
 
   @Override
   protected void fillStateContainer(final StateContainer.Builder<Block, BlockState> builder) {
-    builder.add(HORIZONTAL_FACING, POWERED);
+    builder.add(HORIZONTAL_FACING);
   }
 
-  private final String className = "RedstoneTransmitter";
+  // neighborChanged is called when the power of neighbors changes (duh).
+  @Override
+  public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
+      boolean isMoving) {
+    if (!worldIn.isRemote) {
+      Main.LOGGER.info("neighborChanged getPower:" + getPower(worldIn, pos));
+      TileEntity entity = worldIn.getTileEntity(pos);
+      if (entity instanceof RedstoneTransmitterTileEntity) {
+        RedstoneTransmitterTileEntity transmitterTileEntity = (RedstoneTransmitterTileEntity)entity;
+        transmitterTileEntity.setPowerLevel(getPower(worldIn, pos));
+      }
+    }
+  }
 
-  private void log(final String methodName, final String message) {
-    Main.LOGGER.info(className + "." + methodName + ":" + message);
+  private int getPower(World worldIn, BlockPos pos) {
+    int max = 0;
+    for(Direction direction : Direction.values()) {
+      // We ignore the power from blocks above the transmitter
+      if (direction != Direction.UP) {
+        int val = worldIn.getRedstonePower(pos.offset(direction), direction);
+        if (val > max) {
+          max = val;
+        }
+      }
+    }
+    return max;
+  }
+
+  @Override
+  public boolean hasTileEntity(BlockState state) {
+    return true;
+  }
+
+  @Override
+  public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+    return ModTileEntityTypes.REDSTONE_TRANSMITTER.get().create();
   }
 }

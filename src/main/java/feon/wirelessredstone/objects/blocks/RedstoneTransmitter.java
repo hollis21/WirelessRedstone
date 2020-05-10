@@ -9,6 +9,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.HorizontalBlock;
+import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateContainer;
@@ -52,17 +53,29 @@ public class RedstoneTransmitter extends HorizontalBlock {
   public ActionResultType onBlockActivated(BlockState state, final World worldIn, final BlockPos pos,
       final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
     if (!worldIn.isRemote) {
-      ItemStack stack = player.getHeldItem(handIn);
-      // Is the user clicking on this with the linker?
-      if (stack.getItem() instanceof LinkerItem) {
-        LinkerItem linker = (LinkerItem) stack.getItem();
-        TileEntity entity = worldIn.getTileEntity(pos);
-        // Verify that the tile entity at this position is the transmitter
-        if (entity instanceof RedstoneTransmitterTileEntity) {
-          RedstoneTransmitterTileEntity transmitterTileEntity = (RedstoneTransmitterTileEntity) entity;
+
+      TileEntity entity = worldIn.getTileEntity(pos);
+      // Verify that the tile entity at this position is the transmitter
+      if (entity instanceof RedstoneTransmitterTileEntity) {
+        RedstoneTransmitterTileEntity transmitterTileEntity = (RedstoneTransmitterTileEntity) entity;
+        Integer transmitterFrequency = transmitterTileEntity.getFrequency();
+
+        ItemStack stack = player.getHeldItem(handIn);
+
+        if (stack.isEmpty() && handIn == Hand.MAIN_HAND) {
+          String message = "Transmitter frequency: " + transmitterFrequency + ".";
+          if (transmitterFrequency == null) {
+            message = "Frequency not set";
+          }
+          player.sendStatusMessage(new StringTextComponent(message), false);
+        }
+
+        // Is the user clicking on this with the linker?
+        if (stack.getItem() instanceof LinkerItem) {
+          LinkerItem linker = (LinkerItem) stack.getItem();
+
           // get the linker's frequency
           Integer linkerFrequency = linker.getFrequency(stack);
-          Integer transmitterFrequency = transmitterTileEntity.getFrequency();
           String message;
 
           if (linkerFrequency == null) {
@@ -119,10 +132,9 @@ public class RedstoneTransmitter extends HorizontalBlock {
   public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
       boolean isMoving) {
     if (!worldIn.isRemote) {
-      Main.LOGGER.info("neighborChanged getPower:" + getPower(worldIn, pos));
       TileEntity entity = worldIn.getTileEntity(pos);
       if (entity instanceof RedstoneTransmitterTileEntity) {
-        RedstoneTransmitterTileEntity transmitterTileEntity = (RedstoneTransmitterTileEntity)entity;
+        RedstoneTransmitterTileEntity transmitterTileEntity = (RedstoneTransmitterTileEntity) entity;
         transmitterTileEntity.setPowerLevel(getPower(worldIn, pos));
       }
     }
@@ -130,10 +142,25 @@ public class RedstoneTransmitter extends HorizontalBlock {
 
   private int getPower(World worldIn, BlockPos pos) {
     int max = 0;
-    for(Direction direction : Direction.values()) {
+
+    for (Direction direction : Direction.values()) {
       // We ignore the power from blocks above the transmitter
       if (direction != Direction.UP) {
         int val = worldIn.getRedstonePower(pos.offset(direction), direction);
+        if (val < 15) {
+          BlockState blockState = worldIn.getBlockState(pos.offset(direction));
+          Block block = blockState.getBlock();
+          // Checking for redstone wire since bends in the wire the value isn't
+          // correct when using world.getRedstonePower so we'll get the power
+          // from the wire's state.
+          // Not pretty but it's how redstone repeaters do it.
+          // Credit to https://github.com/McJty for this algorithm, I probably would have
+          // torn my hair
+          // out trying to figure out what was going on.
+          if (block == Blocks.REDSTONE_WIRE) {
+            val = Math.max(val, blockState.get(RedstoneWireBlock.POWER));
+          }
+        }
         if (val > max) {
           max = val;
         }

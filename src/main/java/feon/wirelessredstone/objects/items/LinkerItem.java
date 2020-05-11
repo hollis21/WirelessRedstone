@@ -23,15 +23,16 @@ public class LinkerItem extends Item {
   @Override
   public void addInformation(ItemStack stack, World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
     Integer frequency = this.getFrequency(stack);
-    String message = frequency == null ? "No frequency set" : ("Frequency: " + frequency);
+    String message = frequency == null ? "No frequency set. <Hold shift for usage>" : ("Frequency: " + frequency + ". <Hold shift for usage>");
     tooltip.add(new StringTextComponent(message));
 
     if (Screen.hasShiftDown()) {
-      String shiftMessage = "Right click on a Redstone Reciever or Transmitter to set their frequency to " + frequency;
       if (frequency == null) {
-        shiftMessage = "Right click on a Redstone Reciever or Transmitter to set the Linker's frequency.";
+        tooltip.add(new StringTextComponent("Right click on a Redstone Reciever or Transmitter to set the Linker's frequency."));
+      } else {
+        tooltip.add(new StringTextComponent("Right click on a Redstone Reciever or Transmitter to set their frequency to " + frequency));
+        tooltip.add(new StringTextComponent("Sneak + Right Click to clear Linker's frequency."));
       }
-      tooltip.add(new StringTextComponent(shiftMessage));
     } 
     super.addInformation(stack, worldIn, tooltip, flagIn);
   }

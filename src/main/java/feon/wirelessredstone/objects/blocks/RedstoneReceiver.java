@@ -10,7 +10,9 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -27,9 +29,11 @@ import net.minecraft.world.World;
 
 public class RedstoneReceiver extends HorizontalBlock {
 
+  public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+
   public RedstoneReceiver(Properties properties) {
     super(properties);
-    this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH));
+    this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(POWERED, false));
   }
 
   protected static final VoxelShape SHAPE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D);
@@ -141,7 +145,7 @@ public class RedstoneReceiver extends HorizontalBlock {
 
   @Override
   protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-    builder.add(HORIZONTAL_FACING);
+    builder.add(HORIZONTAL_FACING, POWERED);
   }
 
   @Override

@@ -1,7 +1,9 @@
 package feon.wirelessredstone.tileentity;
 
 import feon.wirelessredstone.init.ModTileEntityTypes;
+import feon.wirelessredstone.objects.blocks.RedstoneReceiver;
 import feon.wirelessredstone.world.RedstoneNetwork;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -31,6 +33,13 @@ public class RedstoneReceiverTileEntity extends TileEntity implements ITickableT
         }
 
         powerLevel = newPower;
+        
+        BlockState state = world.getBlockState(this.pos);
+        if (state.getBlock() instanceof RedstoneReceiver) {
+            state = state.with(RedstoneReceiver.POWERED, powerLevel > 0);
+            world.setBlockState(this.pos, state, 3);
+        }
+
         markDirty();
         getWorld().notifyNeighborsOfStateChange(this.pos, getWorld().getBlockState(this.pos).getBlock());
     }

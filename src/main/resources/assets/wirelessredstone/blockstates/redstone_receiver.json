@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "wirelessredstone:block/redstone_receiver" }
+    "powered=false": { "model": "wirelessredstone:block/redstone_receiver" },
+    "powered=true": {"model": "wirelessredstone:block/redstone_receiver_on"}
   }
 }

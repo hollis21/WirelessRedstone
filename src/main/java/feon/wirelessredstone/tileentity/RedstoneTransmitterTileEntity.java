@@ -1,7 +1,9 @@
 package feon.wirelessredstone.tileentity;
 
 import feon.wirelessredstone.init.ModTileEntityTypes;
+import feon.wirelessredstone.objects.blocks.RedstoneTransmitter;
 import feon.wirelessredstone.world.RedstoneNetwork;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 
@@ -26,6 +28,13 @@ public class RedstoneTransmitterTileEntity extends TileEntity {
         if (frequency == -1 || this.powerLevel == power) {
             return;
         }
+
+        BlockState state = world.getBlockState(this.pos);
+        if (state.getBlock() instanceof RedstoneTransmitter) {
+            state = state.with(RedstoneTransmitter.POWERED, power > 0);
+            world.setBlockState(this.pos, state, 3);
+        }
+
         this.powerLevel = power;
         RedstoneNetwork network = RedstoneNetwork.getNetwork(world);
         network.setFrequencyValue(frequency, this.powerLevel);

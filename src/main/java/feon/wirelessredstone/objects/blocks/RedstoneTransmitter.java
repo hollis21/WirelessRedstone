@@ -11,7 +11,9 @@ import net.minecraft.block.HorizontalBlock;
 import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -28,9 +30,11 @@ import net.minecraft.world.World;
 
 public class RedstoneTransmitter extends HorizontalBlock {
 
+  public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+
   public RedstoneTransmitter(final Properties properties) {
     super(properties);
-    this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH));
+    this.setDefaultState(this.stateContainer.getBaseState().with(HORIZONTAL_FACING, Direction.NORTH).with(POWERED, false));
   }
 
   protected static final VoxelShape SHAPE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D);
@@ -121,11 +125,6 @@ public class RedstoneTransmitter extends HorizontalBlock {
         : super.updatePostPlacement(stateIn, facing, facingState, worldIn, currentPos, facingPos);
   }
 
-  @Override
-  protected void fillStateContainer(final StateContainer.Builder<Block, BlockState> builder) {
-    builder.add(HORIZONTAL_FACING);
-  }
-
   // neighborChanged is called when the power of neighbors changes (duh).
   @Override
   public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
@@ -177,4 +176,10 @@ public class RedstoneTransmitter extends HorizontalBlock {
   public TileEntity createTileEntity(BlockState state, IBlockReader world) {
     return ModTileEntityTypes.REDSTONE_TRANSMITTER.get().create();
   }
+
+  @Override
+  protected void fillStateContainer(final StateContainer.Builder<Block, BlockState> builder) {
+    builder.add(HORIZONTAL_FACING, POWERED);
+  }
+
 }

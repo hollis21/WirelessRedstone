@@ -1,0 +1,22 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " t ",
+        "iri",
+        " i "
+    ],
+    "key": {
+        "r": {
+            "item": "minecraft:redstone"
+        },
+        "t": {
+            "item": "minecraft:redstone_torch"
+        },
+        "i": {
+            "tag": "forge:ingots/iron"
+        }
+    },
+    "result": {
+        "item": "wirelessredstone:linker"
+    }
+}

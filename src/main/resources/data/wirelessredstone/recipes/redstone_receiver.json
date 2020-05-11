@@ -1,8 +1,8 @@
 {
     "type": "minecraft:crafting_shaped",
     "pattern": [
-        " e ",
-        "cRc",
+        " t ",
+        "cec",
         "sss"
     ],
     "key": {
@@ -12,11 +12,11 @@
         "c": {
             "item": "minecraft:repeater"
         },
-        "R": {
-            "item": "minecraft:redstone_block"
+        "t": {
+            "item": "minecraft:redstone_torch"
         },
         "s": {
-            "item": "minecraft:stone"
+            "tag": "forge:stone"
         }
     },
     "result": {

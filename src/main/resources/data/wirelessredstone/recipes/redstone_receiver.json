@@ -1,0 +1,25 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " e ",
+        "cRc",
+        "sss"
+    ],
+    "key": {
+        "e": {
+            "tag": "forge:ender_pearls"
+        },
+        "c": {
+            "item": "minecraft:repeater"
+        },
+        "R": {
+            "item": "minecraft:redstone_block"
+        },
+        "s": {
+            "item": "minecraft:stone"
+        }
+    },
+    "result": {
+        "item": "wirelessredstone:redstone_receiver"
+    }
+}

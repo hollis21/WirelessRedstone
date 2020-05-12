@@ -14,14 +14,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
@@ -52,8 +55,15 @@ public class RedstoneTransmitter extends HorizontalBlock {
     return hasSolidSideOnTop(worldIn, pos.down());
   }
 
+  // Copied from 1.15.2's Block
+  private static final VoxelShape field_220083_b = VoxelShapes.combineAndSimplify(VoxelShapes.fullCube(), makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D), IBooleanFunction.ONLY_FIRST);
+  public static boolean hasSolidSideOnTop(IBlockReader worldIn, BlockPos pos) {
+    BlockState blockstate = worldIn.getBlockState(pos);
+    return !blockstate.isIn(BlockTags.LEAVES) && !VoxelShapes.compare(blockstate.getCollisionShape(worldIn, pos).project(Direction.UP), field_220083_b, IBooleanFunction.ONLY_SECOND);
+ }
+
   @Override
-  public ActionResultType onBlockActivated(BlockState state, final World worldIn, final BlockPos pos,
+  public boolean onBlockActivated(BlockState state, final World worldIn, final BlockPos pos,
       final PlayerEntity player, final Hand handIn, final BlockRayTraceResult hit) {
     if (!worldIn.isRemote) {
 
@@ -104,11 +114,11 @@ public class RedstoneTransmitter extends HorizontalBlock {
           }
 
           player.sendStatusMessage(new StringTextComponent(message), false);
-          return ActionResultType.SUCCESS;
+          return true;
         }
       }
     }
-    return ActionResultType.PASS;
+    return false;
   }
 
   // Allows redstone wire to connect to it
@@ -181,5 +191,8 @@ public class RedstoneTransmitter extends HorizontalBlock {
   protected void fillStateContainer(final StateContainer.Builder<Block, BlockState> builder) {
     builder.add(HORIZONTAL_FACING, POWERED);
   }
-
+  
+  public BlockRenderLayer getRenderLayer() {
+    return BlockRenderLayer.CUTOUT;
+ }
 }

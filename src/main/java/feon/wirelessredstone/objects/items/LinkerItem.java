@@ -9,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -70,7 +71,7 @@ public class LinkerItem extends Item {
         if (playerIn.isSneaking() && linker.getFrequency(stack) != null) {
           linker.clearFrequency(stack);
           playerIn.sendStatusMessage(new StringTextComponent("Linker frequency cleared!"), false);
-          return ActionResult.resultSuccess(stack);
+          return ActionResult.newResult(ActionResultType.SUCCESS, stack);
         }
       }
     }

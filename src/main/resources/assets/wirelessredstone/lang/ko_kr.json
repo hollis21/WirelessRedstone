@@ -1,0 +1,8 @@
+{
+  "item.wirelessredstone.linker":"무선 연결기",
+
+  "itemGroup.wirelessredstone":"무선 레드스톤",
+
+  "block.wirelessredstone.redstone_transmitter":"레드스톤 송신기",
+  "block.wirelessredstone.redstone_receiver":"레드스톤 수신기"
+}

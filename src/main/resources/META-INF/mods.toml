@@ -14,7 +14,7 @@ loaderVersion="[31,)" #mandatory This is typically bumped every Minecraft versio
 
 modId="wirelessredstone" #mandatory
 
-version="0.1.0" #mandatory
+version="0.1.1" #mandatory
 
 displayName="Wireless Redstone" #mandatory
 
@@ -26,10 +26,10 @@ displayName="Wireless Redstone" #mandatory
 
 # credits="" #optional
 
-authors="Feon" #optional
+authors="Feonen" #optional
 
 description='''
-Wireless Redstone by Feon
+Wireless Redstone by Feonen
 '''
 
 [[dependencies.wirelessredstone]] #optional
